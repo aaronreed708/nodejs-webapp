@@ -5,32 +5,34 @@ $(document).on('credential-handler-polyfill-loaded', init);
 $(document).ready(function() {
 
   // Install button click
-  $('#btnInstall').on('click', function() {
+  $('button#btnInstall').click(async function(){
 
-    async() => {
-      try {
-        this.installed = this.uninstalled = false;
-        registration = await install();
-        this.installed = true;
-      } catch(e) {
-        console("home-component.install failed, error: "+e);
-      }
+    try {
+      this.installed = this.uninstalled = false;
+      registration = await install();
+      this.installed = true;
+      $('button#btnInstall').prop('disabled', this.installed);
+      $('button#btnUninstall').prop('disabled', !this.installed);
+    } catch(e) {
+      console("home-component.install failed, error: "+e);
     }
+
   });
 
   // Uninstall button click
-  $('#btnUninstall').on('click', function() {
+  $('button#btnUninstall').click(async function(){
 
-    async() => {
-      try {
-        this.installed = this.uninstalled = false;
-        await uninstall();
-        this.uninstalled = true;
-        registration = null;
-      } catch(e) {
-        console("home-component.uninstall failed, error: "+e);
-      }
+    try {
+      this.installed = this.uninstalled = false;
+      await uninstall();
+      this.uninstalled = true;
+      $('button#btnInstall').prop('disabled', this.installed);
+      $('button#btnUninstall').prop('disabled', !this.installed);
+      registration = null;
+    } catch(e) {
+      console("home-component.uninstall failed, error: "+e);
     }
+
   });
 
 });
@@ -42,10 +44,12 @@ async function init() {
     await registration.credentialManager.hints.keys();
     this.installed = true;
   } catch (e) {
-    console.error("home-component.init failed, error: "+e);
+    // it is ok for this to fail until user grants permission to show keys
     this.installed = false;
   }
 
+  $('button#btnInstall').prop('disabled', this.installed);
+  $('button#btnUninstall').prop('disabled', !this.installed);
 }
 
 async function getRegistration() {
