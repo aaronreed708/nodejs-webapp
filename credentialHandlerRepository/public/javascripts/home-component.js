@@ -114,8 +114,8 @@ async function uninstall() {
 async function addHints(registration) {
   return Promise.all([
     registration.credentialManager.hints.set(
-      'did:method1:1234-1234-1234-1234', {
-        name: 'My business identity',
+      'did:sov:1234567890', {
+        name: 'My ti-agent identity',
         enabledTypes: ['VerifiableProfile'],
       })
     ]);
