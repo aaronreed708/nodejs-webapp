@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('credentialhandler:server');
 var http = require('http');
+var fs = require('fs');
+var https = require('https');
 
 /**
  * Get port from environment and store in Express.
@@ -14,6 +16,7 @@ var http = require('http');
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
+
 
 /**
  * Create HTTP server.
@@ -26,8 +29,33 @@ var server = http.createServer(app);
  */
 
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.on('error', function(error) {
+  onError(error, port);
+});
+server.on('listening', function() {
+  onListening(server);
+});
+
+
+/**
+ * Create HTTPS server.
+ */
+
+var options = {
+  key: fs.readFileSync('./ssl/privatekey.pem'),
+  cert: fs.readFileSync('./ssl/certificate.pem')
+}
+
+var https_port = normalizePort('18443');
+var https_server = https.createServer(options, app).listen(https_port);
+https_server.on('error', function(error) {
+  onError(error, https_port);
+});
+https_server.on('listening', function() {
+  onListening(https_server);
+});
+
+
 
 /**
  * Normalize a port into a number, string, or false.
@@ -50,17 +78,17 @@ function normalizePort(val) {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Event listener for HTTP/HTTPS server "error" events.
  */
 
-function onError(error) {
+function onError(error, serverport) {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof serverport === 'string'
+    ? 'Pipe ' + serverport
+    : 'Port ' + serverport;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -81,8 +109,8 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening() {
-  var addr = server.address();
+function onListening(activeserver) {
+  var addr = activeserver.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;

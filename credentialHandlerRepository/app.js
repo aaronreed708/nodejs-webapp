@@ -10,6 +10,7 @@ var handlerRouter = require('./routes/credentialhandler');
 var requestRouter = require('./routes/credentialrequest');
 var storeRouter = require('./routes/credentialstore');
 
+// http and https server set up in ./bin/www
 var app = express();
 
 // view engine setup
